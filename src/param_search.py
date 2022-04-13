@@ -3,7 +3,7 @@
 """
 Created on Wed Mar 23 17:13:23 2022
 
-name:   All_modeled.py 
+name:   param_search.py 
 
 location: /Users/dkm/Documents/Talmy_research/Zinser_and_Ben/Project_1_nutrient_additions/src
 
@@ -18,6 +18,7 @@ working on: importing and visualising data from Morris et al 2011 fig 3a
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import itertools
 from scipy import *
 from scipy.integrate import *
 
@@ -42,7 +43,7 @@ df_all = df_all.rename({'Time(days)':'times'}, axis=1)    #'renaming column to m
 
 
 treatments = [50,200,400,800,1000]  #HOOH nM []
-treatments_smol = treatments[1:3]
+
 dc = dict()
 
 ####slicing df into treatments and saving into dictionary (dc)######
@@ -62,8 +63,8 @@ fig1,ax1 = plt.subplots()
 
 colors = ('green', 'c', 'orange', 'r', 'k') #make into a set in loop? for c in colors, color = count(c)?????
 #for df_i in dc:
-for t in treatments_smol: 
-    count = treatments_smol.index(t)
+for t in treatments: 
+    count = treatments.index(t)
     #print(count)
     df = dc['df_'+str(t)]
     times = df['times']
@@ -103,63 +104,60 @@ P = (5e5) # units are cells per mL
 #mumax = k2    #set max/min for this known from lit? 
 
 #parameter values (k1 = alpha, k2 = Vmax, kdam = initial HOOH damage, kddam = HOOH damage when N runs out)
-k1s = np.r_[[0.02, 0.02, 0.02, 0.02, 0.02]]*1e+100     
-k2s = [0.32, 0.32, 0.32, 0.32, 0.32]
-kdams = [0.06,0.2, 0.6, 1.3, 3]
-kddams = [0.03, 0.5, 2, 2, 1.4]
+k1s = np.arange(0.001,0.04,0.01)
+k2s = np.arange(0.001,0.04,0.01)
+kdams = np.arange(0.001,3.0,0.01)
+kddams = np.arange(0.001,3.0,0.01)
 
-params = list(zip(k1s,k2s,kdams,kddams))
 
-fig2,ax2 = plt.subplots()
-#df = dc['df_50']
-#data = df['avg_exp']
-#S_base =  (data.max()- data.iloc[0])*Qn 
+params = list(itertools.product(k1s,k2s,kdams,kddams))
+#fig2,ax2 = plt.subplots()
 
-for t in treatments_smol: 
-    count = treatments_smol.index(t)
-    k1 = params[count][0]
-    k2 = params[count][1]
-    kdam = params[count][2]
-    kddam = params[count][3]
+
+for t in treatments: 
+    count = treatments.index(t)
+    k1 = (params[count][0])
+    k2 = (params[count][1])
+    kdam = (params[count][2])
+    kddam = (params[count][3])
     ks = (k2/k1)   #set max value for this that is know from lit? (between 0.01 and 0.015 for N metabolism in )
     SsEuler = np.array([])
     PsEuler = np.array([])
+    results = np.array([])
     P = 1.3e5
     #print(kdam,kddam)
-    S_base =   162.0             #3.0 ~160nM from BCC paper calculations 
+    #S_base =   162.0             #3.0 ~160nM from BCC paper calculations 
     df = dc['df_50']
     data = df['avg_exp']
-    S =  (data.max()- data.iloc[0])*Qn    #using QN and 50 treatment as base N for test.     
+    S_base =  (data.max()- data.iloc[0])*Qn    #using QN and 50 treatment as base N for test.     
     # units are cells per mL
-    #S = S_base    #nM N per ml for units      #    0.164 micromolar rediual N from Calfee_et_al 2022
+    S = (S_base)    #nM N per ml for units      #    0.164 micromolar rediual N from Calfee_et_al 2022
     for t in times:
             PsEuler = np.append(PsEuler,P)
             SsEuler = np.append(SsEuler,S)
-            #if (S>2e-3):
-            #    delta = kdam
-            #else:
-            #    delta = kddam
-            delta = kdam
-            #print(S)
-            #print(P)
+            if (S>1e-4):
+                delta = kdam
+            else:
+                delta = kddam
             dPdt = k2 * P * S /((ks) + S) - delta*P
-            dSdt = -P*(k2*(S)/((ks)+S))*Qn
+            dSdt = -P*(( k2*S)/((ks)+S))*Qn
             if S+dSdt*step <0:                    #making sure S isnt taken negative and therefore causing issues when we log transform the data
-                    S = S + dSdt*step  #S = 4e-47
+                    S = 4e-47
             else:
                     S = S + dSdt*step
+            results = np.append(results, P)
             P = P + dPdt*step
     ax1.plot(times,(PsEuler), linestyle = 'dashed', color = colors[count]) 
-    ax2.plot(times,(SsEuler), linestyle = 'dashed', color = colors[count])
+    #ax2.plot(times,(SsEuler), linestyle = 'dashed', color = colors[count])
 
-a2_legend = [zip(treatments,colors)]
-ax2.set(xlabel= 'Time (days)', ylabel='Nitrogen ( nM  ml$^{-1}$)')
-ax2.set_title = ('Nutrient dynamics') #not showing up for some reason? 
+#a2_legend = [zip(treatments,colors)]
+#ax2.set(xlabel= 'Time (days)', ylabel='Nitrogen ( nM  ml$^{-1}$)')
+#ax2.set_title = ('Nutrient dynamics') #not showing up for some reason? 
 #ax2.legend([(list(a2_legend))] ,loc = 'lower left')
-ax2.semilogy()
+#ax2.semilogy()
 plt.show()
 
 
 
 fig1.savefig('../figures/biomass')
-fig2.savefig('../figures/nutrients')
+#fig2.savefig('../figures/nutrients')

@@ -1,17 +1,48 @@
-from numpy import *
-from scipy import *
+
 from pylab import *
-from read_dthief import *
 from scipy.integrate import *
 import matplotlib as plt 
-from plotnine import *
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import *
+from scipy.integrate import *
 
 
-def get_Qn():
-        return 9.4e-15*14.0*1e+6 # mumol cell-1
+#data
+
+df_all = pd.read_csv("../data/Pro_hooh_avgs.csv")
+df_all['avg_exp'] = df_all['avg_exp'].fillna(value = 0.0) #filling Nans with 0.0 in 'avg' column 
+df_all = df_all.rename({'Time(days)':'times'}, axis=1)    #'renaming column to make it callable by 'times'
+
+####################################
+
+# Slicing Data
+
+####################################
+
+
+treatments = [50,200,400,800,10000]  #HOOH nM []
+
+dc = dict()
+
+####slicing df into treatments and saving into dictionary (dc)######
+for i in treatments:
+    df_i = df_all[df_all["treatment"].isin([i])]
+    name = ('df_' + str(i))
+    dc.update({name : df_i})  #update dictionary of dfs with each loop itteration. 
+
+
+step = 0.1
+ndays = 50
+times = np.linspace(0,ndays,int(ndays/step))
+Qn = (9.4e-15*(1/(14.0))*1e+9)
+mumax = k2
+ks = (k2/k1)
+
 
 def f(u,t,mumax,ks,nrk,ndk):
-        Qn = get_Qn()
+        Qn = (9.4e-15*(1/(14.0))*1e+9)
         N,P = u[0],u[1]
         if (N > 1e-4):
                 df = nrk
@@ -19,6 +50,12 @@ def f(u,t,mumax,ks,nrk,ndk):
                 df = ndk
         dPdt = mumax*N/(N+ks)*P - df*P
         dNdt = -mumax*N/(N+ks)*P*Qn
+        if (S>1e-4):
+            delta = nrdelta
+        else:
+            delta = nddelta
+        dPdt = k2 * P * S /( (k2/k1) + S) - delta*P
+        dSdt = -P*(( k2*S)/((k2/k1)+S))*Qn
         return concatenate([r_[[dNdt]],r_[[dPdt]]])
 
 def integrate(N,P,ntimes,ptimes,pars,delt=1.0/24.0,forshow=False):
@@ -35,38 +72,15 @@ def integrate(N,P,ntimes,ptimes,pars,delt=1.0/24.0,forshow=False):
                 pnt = u[1]
         return nnt,pnt
 
-def get_chi(nts,pts,ncs,pcs,pstds,pars):
-        chisum = 0
-        mumax,ks,nrks,ndks = pars[0],pars[1],pars[2:7],pars[7:12]
-        for (nt,pt,nc,pc,pstd,nrk,ndk) in zip(nts,pts,ncs,pcs,pstds,nrks,ndks):
-                parsloc = r_[[mumax,ks,nrk,ndk]]
-                nnt,pnt = integrate(nc[0],pc[0],nt,pt,parsloc)	
-                chi = sum((pnt - pc) ** 2 / (pstd ** 2))
-                chisum = chisum + chi
-        return chisum
 
-ddir = './morris/data/'
-
-
-
-
-plt.rc('xtick', color='k')
-plt.rc('lines', lw=2.0)
-plt.rc('grid', lw=4)
-rc('font', weight='bold',size=16)
-
-
-
-
-
-pt1,pc1 = read_dthief(ddir+'UH18301_005HOOH.txt')
+pt1,pc1 = read_dthief(ddir+'UH18301_005HOOH.txt')   #df = dc['df_'+str(i)]
 pt2,pc2 = read_dthief(ddir+'UH18301_02HOOH.txt')
 pt3,pc3 = read_dthief(ddir+'UH18301_04HOOH.txt')
 pt4,pc4 = read_dthief(ddir+'UH18301_08HOOH.txt')
 pt5,pc5 = read_dthief(ddir+'UH18301_10HOOH.txt')
 pc1,pc2,pc3,pc4,pc5 = 10**pc1*1.01,10**pc2*0.99,10**pc3,10**pc4*0.999,10**pc5
 
-nc1 = r_[[(pc1[-2]-pc1[0])*get_Qn()]]
+nc1 = r_[[(pc1[-2]-pc1[0])*get_Qn()]]      #getting N1 value from max bio growth *QN of each line 
 nc2 = r_[[(pc1[-2]-pc1[0])*get_Qn()]]
 nc3 = r_[[(pc1[-2]-pc1[0])*get_Qn()]]
 nc4 = r_[[(pc1[-2]-pc1[0])*get_Qn()]]

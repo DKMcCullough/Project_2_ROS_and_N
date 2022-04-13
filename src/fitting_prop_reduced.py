@@ -7,11 +7,8 @@ import matplotlib as plt
 from plotnine import *
 
 
-def get_Qn():
-        return 9.4e-15*14.0*1e+6 # mumol cell-1
-
 def f(u,t,mumax,ks,nrk,ndk):
-        Qn = get_Qn()
+        Qn = 9.4e-15*14.0*1e+6
         N,P = u[0],u[1]
         if (N > 1e-4):
                 df = nrk
@@ -87,8 +84,8 @@ f1,ax1 = subplots(figsize=[9,6])
 ax[1].errorbar(pt1,pc1/1e+5,label=r'0.05 $\mu$M HOOH', fmt='o',yerr=pstds[0]/1e+5)
 ax[1].errorbar(pt2,pc2/1e+5,label=r'0.2 $\mu$M HOOH',fmt='o',yerr=pstds[1]/1e+5)
 ax[1].errorbar(pt3,pc3/1e+5,label=r'0.4 $\mu$M HOOH',fmt='o',yerr=pstds[2]/1e+5)
-#ax[1].errorbar(pt4,pc4/1e+5,label=r'0.8 $\mu$M HOOH',fmt='o',yerr=pstds[3]/1e+5)
-#ax[1].errorbar(pt5,pc5/1e+5,label=r'10 $\mu$M HOOH',fmt='o',yerr=pstds[4]/1e+5)  
+ax[1].errorbar(pt4,pc4/1e+5,label=r'0.8 $\mu$M HOOH',fmt='o',yerr=pstds[3]/1e+5)
+ax[1].errorbar(pt5,pc5/1e+5,label=r'10 $\mu$M HOOH',fmt='o',yerr=pstds[4]/1e+5)  
 
 l = ax[1].legend(loc='upper left',fontsize=12,ncol=2)
 l.draw_frame(False)
@@ -162,7 +159,6 @@ print (' ')
 mumax,ks,nrks = log(0.4498586),log(5.07530e-09),log(r_[[0.053584,0.333407,0.92427,1.482875,3.93573]])
 ndks = nrks
 ax[1].set_prop_cycle(None)
-count=0
 for (nt,pt,nc,pc,pstd,nr,nd) in zip(nts,pts,ncs,pcs,pstds,nrks,ndks):
         parsloc = r_[[mumax,ks,nr,nd]]
         delt = 1.0/24.0
@@ -170,14 +166,10 @@ for (nt,pt,nc,pc,pstd,nr,nd) in zip(nts,pts,ncs,pcs,pstds,nrks,ndks):
         mtimes = linspace(0,amax(pt),(amax(pt) /delt ))
         ax[0].plot(mtimes*24,nnt, markersize=9)
         ax[1].plot(mtimes*24,pnt/1e+5, markersize=9)
-        count=count+1
-        #print(count) 
-        if count == 3:
-                break
+
 
 ax[0].set_prop_cycle(None)
 ax[1].set_prop_cycle(None)
-count=0
 mumax,ks,nrks,ndks = pars[0],pars[1],pars[2:7],pars[7:12]
 for (nt,pt,nc,pc,pstd,nr,nd) in zip(nts,pts,ncs,pcs,pstds,nrks,ndks):
         parsloc = r_[[mumax,ks,nr,nd]]
@@ -186,31 +178,9 @@ for (nt,pt,nc,pc,pstd,nr,nd) in zip(nts,pts,ncs,pcs,pstds,nrks,ndks):
         mtimes = linspace(0,amax(pt),(amax(pt) /delt ))
         ax[0].plot(mtimes*24,nnt,ls='--')
         ax[1].plot(mtimes*24,pnt/1e+5,ls='--')
-        count=count+1
-        #print(count) 
-        if count == 3:
-                break
-#HOOHs = r_[[0.05,0.2,0.4,0.8,10.0]]
-#nrks = 0.053584,0.333407,0.92427,1.482875,3.93573
 
-
-ax1.errorbar(0.05,0.053584,c='b',marker='o',fmt='o',markersize=10,label='Damage rate, $\kappa_{dam}$')
-ax1.errorbar(0.2,0.333407,c='orange',marker='o',fmt='o',markersize=10,label='Damage rate, $\kappa_{dam}$')
-ax1.errorbar(0.4,0.92427,c='g',marker='o',fmt='o',markersize=10,label='Damage rate, $\kappa_{dam}$')
-#ax1.errorbar(0.8,1.482875,c='r',marker='o',fmt='o',markersize=10,label='Damage rate, $\kappa_{dam}$')
-#ax1.errorbar(10.0,3.93573,c='purple',marker='o',fmt='o',markersize=10,label='Damage rate, $\kappa_{dam}$')
-
-
-ax1.errorbar(0.05,0.030527209915541417,c='b',marker='o',fmt='o',markersize=10,label='Deplete N Damage rate, $\kappa_{dam,d}$')
-ax1.errorbar(0.05,0.5029222415746297,c='orange',marker='o',fmt='o',markersize=10,label='Deplete N Damage rate, $\kappa_{dam,d}$')
-ax1.errorbar(0.05,4.408103330893407,c='g',marker='o',fmt='o',markersize=10,label='Deplete N Damage rate, $\kappa_{dam,d}$')
-
-
-
-
-
-#ax1.errorbar(HOOHs,exp(nrks),yerr=std(exp(pall)[2:7],1),c='k',marker='o',fmt='o',markersize=10,label='High N damage rate, $\kappa_{dam,r}$')  #High N damage rate, $\kappa_{dam,r}
-#ax1.errorbar(HOOHs[:3],exp(ndks[:3]),yerr=std(exp(pall)[2:7],1)[:3],c='k',marker='*',fmt='o',markersize=10,label='Low N damage rate $\kappa_{dam,d}$')
+ax1.errorbar(HOOHs,exp(nrks),yerr=std(exp(pall)[2:7],1),c='k',marker='o',fmt='o',markersize=10,label='High N damage rate, $\kappa_{dam,r}$')
+ax1.errorbar(HOOHs[:3],exp(ndks[:3]),yerr=std(exp(pall)[2:7],1)[:3],c='k',marker='*',fmt='o',markersize=10,label='Low N damage rate $\kappa_{dam,d}$')
 mh = linspace(0,10,1000)
 mhd = linspace(0,1,1000)
 dmax,alp = 4.6,3.0
@@ -220,15 +190,13 @@ ax1.plot(mh,md,c='k')
 ax1.plot(mhd,mdd,c='k',ls='--')
 ax[1].set_ylim(ymax=2.5)
 l = ax1.legend(loc='lower right', fontsize=16)
-l.draw_frame(False)
 
-
-ax[0].set_xlabel('Time (hours)', fontweight='bold', fontsize=20)
-ax[1].set_xlabel('Time (hours)', fontweight='bold', fontsize=20)
-ax[0].set_ylabel('Nitrogen Concentration ($\mu$mol ml$^{-1}$)',fontweight='bold',  fontsize=20)
-ax[1].set_ylabel('Cells (x10$^{5}$ ml$^{-1}$)',fontweight='bold', fontsize=20)
-ax1.set_xlabel(r'HOOH ($\mu$M)', fontweight='bold', fontsize=20)
-ax1.set_ylabel(r'Damage rate (day$^{-1}$)', fontweight='bold',fontsize=20)
+ax[0].set_xlabel('Time (hours)', fontsize=20)
+ax[1].set_xlabel('Time (hours)', fontsize=20)
+ax[0].set_ylabel('Nitrogen ($\mu$mol ml$^{-1}$)', fontsize=20)
+ax[1].set_ylabel('Cells (x10$^{5}$ ml$^{-1}$)',fontsize=20)
+ax1.set_xlabel(r'HOOH ($\mu$M)', fontsize=20)
+ax1.set_ylabel(r'Damage rate, $\kappa$ (day$^{-1}$)', fontsize=20)
 
 fa.subplots_adjust(wspace=0.3)
 
