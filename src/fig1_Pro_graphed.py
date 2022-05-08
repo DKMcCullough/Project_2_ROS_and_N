@@ -71,7 +71,7 @@ for t in treatments:
     times = df['times']
     data = df['avg_exp'] #data was loggeed in original graph; transformed in excel before read in
     ax1.plot(times, data, linestyle = 'None', marker= markers[count], markersize= 10, label = (str(t) +' nM HOOH'), color = colors[count])  #color = colors(i))
-    ax1.plot(times,data,linestyle='-', linewidth=0.25, color='black', marker = 'None')
+    #ax1.plot(times,data,linestyle='-', linewidth=0.25, color='black', marker = 'None')
 #plt.show()
 ax1.set(xlabel= 'Time (days)', ylabel='Biomass ( cells  ml$^{-1}$)')
 ax1.set_title = ('Prochlorococcus U18301 w/ HOOH') #not showing up for some reason? 
@@ -168,14 +168,19 @@ ax2.semilogy()
 
 fig3,ax3 = plt.subplots()
 
-for y, c, m, in zip(kdams, colors, markers):
-    ax3.plot(kdams, treatments,linestyle = 'none', color = c, marker = m)
+colors = ('green', 'c', 'orange', 'r', 'k') #make into a set in loop? for c in colors, color = count(c)?????
+markers = ('s','v','o','*','d')
+for x, y, c, m, in zip(treatments,kdams, colors, markers):
+    ax3.plot(x, y,linestyle = 'none', color = c, marker = m, markersize = 10)
+    #ax3.plot(x, y,linestyle='-', linewidth=0.25, color='black', marker = 'None'
 #ax3.plot(kdams,treatments,linestyle = 'none', marker=markers[kdam[]],color=colors[count])
 ax3.set(xlabel= 'HOOH treatment (nM)', ylabel='kdam (day$^{-1}$)')
-ax3.semilogy()
+#ax3.plot(treatments,kdams,linewidth = 0.25, c = 'k')
+#ax3.semilogy()
 plt.show()
 
 
 
 fig1.savefig('../figures/biomass')
 fig2.savefig('../figures/nutrients')
+fig3.savefig('../figures/kdam_v_HOOH')
